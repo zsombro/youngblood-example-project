@@ -1,6 +1,8 @@
 # youngblood-example-project
 An example project using Youngblood.js
 
+### See it working here: https://zsombro.github.io/youngblood-example-project/
+
 If you want to run the code, all you have to do is check out the codebase using
 
 ```
