@@ -1,0 +1,16 @@
+{
+    "idle": {
+        "startX": "0",
+        "startY": "0",
+        "frameWidth": "80",
+        "frameHeight": "48",
+        "frames": "8"
+    },
+    "running": {
+        "startX": "0",
+        "startY": "48",
+        "frameWidth": "80",
+        "frameHeight": "48",
+        "frames": "6"
+    }
+}
