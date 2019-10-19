@@ -49,9 +49,9 @@ const wolfMovementSystem: System = {
     systemId: 'wolfMovementSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
     update: function (entity: Entity, services: SceneServices) {
-        const inputMapping = entity['InputMapping'] as InputMapping;
-        const sprite = entity['AnimatedSprite'] as AnimatedSprite;
-        const pos = entity['Position'] as Position;
+        const sprite = entity.get('AnimatedSprite');
+        const pos = entity.get('Position');
+        const inputMapping = entity.get('InputMapping');
 
         if (inputMapping.right) {
             sprite.animationName = 'running';
