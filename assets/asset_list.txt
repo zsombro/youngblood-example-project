@@ -1,3 +1,0 @@
-assets/80x48Wolf_FullSheet.png
-assets/wolf_info.json
-assets/img_bg.jpg

@@ -1,0 +1,16 @@
+{
+    "assets": [
+        {
+            "type": "image",
+            "url": "assets/80x48Wolf_FullSheet.png"
+        },
+        {
+            "type": "json",
+            "url": "assets/wolf_info.json"
+        },
+        {
+            "type": "image",
+            "url": "assets/background.jpg"
+        }
+    ]
+}

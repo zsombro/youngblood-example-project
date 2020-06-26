@@ -13,11 +13,12 @@
   "author": "me",
   "license": "ISC",
   "dependencies": {
-    "ts-loader": "^5.3.3",
-    "typescript": "^3.4.4",
-    "webpack": "^4.30.0"
+    "youngblood": "^0.2.3"
   },
   "devDependencies": {
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.4.4",
+    "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1"
   }
 }

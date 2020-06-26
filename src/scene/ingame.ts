@@ -19,15 +19,15 @@ export var ingame: SceneOptions = {
         context.registerSystem(InputMappingSystem);
         context.registerSystem(wolfMovementSystem);
 
-        const bg_image = <HTMLImageElement>services.assets.getAsset('img_bg');
+        const bg_image = <HTMLImageElement>services.assets.get('assets/background');
         const background = new Entity();
         background.addComponent(new Position(-150, -300));
         background.addComponent(new Sprite(bg_image));
 
         context.addEntity(background);
 
-        const wolf_sheet = <HTMLImageElement>services.assets.getAsset('80x48Wolf_FullSheet');
-        const wolf_info = <AnimationSheet>services.assets.getAsset('wolf_info');
+        const wolf_sheet = <HTMLImageElement>services.assets.get('assets/80x48Wolf_FullSheet');
+        const wolf_info = <AnimationSheet>services.assets.get('assets/wolf_info');
         const wolf = new Entity();
         wolf.addComponent(new Position(100, 445));
         wolf.addComponent(new InputMapping([
