@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "../youngblood/bundle/youngblood.js":
-/*!******************************************!*\
-  !*** ../youngblood/bundle/youngblood.js ***!
-  \******************************************/
+/***/ "./node_modules/youngblood/bundle/youngblood.js":
+/*!******************************************************!*\
+  !*** ./node_modules/youngblood/bundle/youngblood.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -181,7 +181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -212,6 +212,9 @@ var Scene = /** @class */ (function () {
     Scene.prototype.addEntity = function (entity) {
         this.gameEntities[entity.id] = entity;
     };
+    Scene.prototype.removeEntity = function (id) {
+        delete this.gameEntities[id];
+    };
     return Scene;
 }());
 exports.Scene = Scene;
@@ -223,23 +226,145 @@ exports.Scene = Scene;
 
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(2);
-exports.Game = game_1.default;
-var scene_1 = __webpack_require__(0);
-exports.Scene = scene_1.Scene;
-var entity_1 = __webpack_require__(7);
-exports.Entity = entity_1.default;
-var component_1 = __webpack_require__(8);
-exports.Position = component_1.Position;
-exports.Velocity = component_1.Velocity;
-exports.Sprite = component_1.Sprite;
-exports.AnimatedSprite = component_1.AnimatedSprite;
-exports.Box = component_1.Box;
-exports.InputMapping = component_1.InputMapping;
-exports.Label = component_1.Label;
-var system_1 = __webpack_require__(9);
-exports.InputMappingSystem = system_1.InputMappingSystem;
+/**
+ * Components provide entities with attributes
+ * that relate to in-game functionality.
+ * Like entities, components are JUST DATA and not logic!
+ */
+var Component = /** @class */ (function () {
+    function Component(name) {
+        this.name = name;
+    }
+    return Component;
+}());
+exports.default = Component;
+var Position = /** @class */ (function (_super) {
+    __extends(Position, _super);
+    function Position(x, y) {
+        var _this = _super.call(this, 'Position') || this;
+        _this.x = x;
+        _this.y = y;
+        return _this;
+    }
+    return Position;
+}(Component));
+exports.Position = Position;
+var Velocity = /** @class */ (function (_super) {
+    __extends(Velocity, _super);
+    function Velocity(x, y) {
+        var _this = _super.call(this, 'Velocity') || this;
+        _this.x = x;
+        _this.y = y;
+        return _this;
+    }
+    return Velocity;
+}(Component));
+exports.Velocity = Velocity;
+var Label = /** @class */ (function (_super) {
+    __extends(Label, _super);
+    function Label(txt, options) {
+        var _this = _super.call(this, 'Label') || this;
+        _this.txt = txt;
+        _this.color = options.color || '#000';
+        _this.font = options.font || 'monospace';
+        _this.isVisible = options.isVisible || true;
+        return _this;
+    }
+    return Label;
+}(Component));
+exports.Label = Label;
+var Sprite = /** @class */ (function (_super) {
+    __extends(Sprite, _super);
+    function Sprite(spriteSource) {
+        var _this = _super.call(this, 'Sprite') || this;
+        _this.spriteSource = spriteSource;
+        return _this;
+    }
+    return Sprite;
+}(Component));
+exports.Sprite = Sprite;
+var AnimatedSprite = /** @class */ (function (_super) {
+    __extends(AnimatedSprite, _super);
+    function AnimatedSprite(spriteSource, animationSheet, options) {
+        var _this = _super.call(this, 'AnimatedSprite') || this;
+        _this.spriteSource = spriteSource;
+        _this.animationSheet = animationSheet;
+        if (options === undefined)
+            var options = {};
+        // If there's no default animation set, we'll use the first one defined in the JSON object
+        _this.animationName = options.animationName || Object.keys(animationSheet)[0];
+        _this.scale = options.scale || 1.0;
+        _this.loop = options.loop || true;
+        _this.isPlaying = options.isPlaying || true;
+        _this.flip = options.flip || false;
+        _this.currentFrame = 0;
+        return _this;
+    }
+    return AnimatedSprite;
+}(Component));
+exports.AnimatedSprite = AnimatedSprite;
+var AudioSource = /** @class */ (function (_super) {
+    __extends(AudioSource, _super);
+    function AudioSource(audioBuffer) {
+        var _this = _super.call(this, 'AudioSource') || this;
+        _this.audioBuffer = audioBuffer;
+        return _this;
+    }
+    return AudioSource;
+}(Component));
+exports.AudioSource = AudioSource;
+var Box = /** @class */ (function (_super) {
+    __extends(Box, _super);
+    function Box(width, height, fillStyle) {
+        var _this = _super.call(this, 'Box') || this;
+        _this.width = width;
+        _this.height = height;
+        _this.fillStyle = fillStyle;
+        return _this;
+    }
+    return Box;
+}(Component));
+exports.Box = Box;
+var BoxCollider = /** @class */ (function (_super) {
+    __extends(BoxCollider, _super);
+    function BoxCollider(width, height) {
+        var _this = _super.call(this, 'BoxCollider') || this;
+        _this.width = width;
+        _this.height = height;
+        return _this;
+    }
+    return BoxCollider;
+}(Component));
+exports.BoxCollider = BoxCollider;
+var InputMapping = /** @class */ (function (_super) {
+    __extends(InputMapping, _super);
+    // for eg. mapping = [ {name: 'up', code: 38} ]
+    function InputMapping(mapping) {
+        var _this = _super.call(this, 'InputMapping') || this;
+        _this.mapping = mapping;
+        for (var i = 0; i < mapping.length; i++) {
+            _this[mapping[i].name] = false;
+        }
+        return _this;
+    }
+    return InputMapping;
+}(Component));
+exports.InputMapping = InputMapping;
 
 
 /***/ }),
@@ -249,19 +374,44 @@ exports.InputMappingSystem = system_1.InputMappingSystem;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(3);
+exports.Game = game_1.default;
 var scene_1 = __webpack_require__(0);
-var inputmanager_1 = __webpack_require__(3);
-var audiomanager_1 = __webpack_require__(4);
-var assetloader_1 = __webpack_require__(5);
-var renderer_1 = __webpack_require__(6);
+exports.Scene = scene_1.Scene;
+var entity_1 = __webpack_require__(8);
+exports.Entity = entity_1.default;
+var component_1 = __webpack_require__(1);
+exports.Position = component_1.Position;
+exports.Velocity = component_1.Velocity;
+exports.Sprite = component_1.Sprite;
+exports.AnimatedSprite = component_1.AnimatedSprite;
+exports.Box = component_1.Box;
+exports.InputMapping = component_1.InputMapping;
+exports.Label = component_1.Label;
+var component_2 = __webpack_require__(1);
+exports.Component = component_2.default;
+var system_1 = __webpack_require__(9);
+exports.InputMappingSystem = system_1.InputMappingSystem;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var scene_1 = __webpack_require__(0);
+var inputmanager_1 = __webpack_require__(4);
+var audiomanager_1 = __webpack_require__(5);
+var assetloader_1 = __webpack_require__(6);
+var renderer_1 = __webpack_require__(7);
 var Game = /** @class */ (function () {
     /**
      * Returns a new `Game` instance.
      */
     function Game() {
         this.renderer = null;
-        // these are classes that offer lower level functionality to systems
-        // mostly through browser APIs
         this.services = {
             input: new inputmanager_1.default(),
             audio: new audiomanager_1.default(),
@@ -359,12 +509,11 @@ var Game = /** @class */ (function () {
     };
     Game.prototype.update = function () {
         for (var e in this.currentScene.gameEntities) {
+            var entity = this.currentScene.gameEntities[e];
             for (var s in this.currentScene.systems) {
-                var entity = this.currentScene.gameEntities[e];
                 var system = this.currentScene.systems[s];
-                console.log(entity, system.requiredComponents);
                 if (entity.hasComponents(system.requiredComponents))
-                    this.currentScene.systems[s].update(entity, this.services);
+                    system.update(entity, this.currentScene, this.services);
             }
         }
     };
@@ -374,7 +523,7 @@ exports.default = Game;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -401,7 +550,7 @@ exports.default = InputManager;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -414,8 +563,8 @@ var AudioManager = /** @class */ (function () {
             this.songsPlaying = [];
             this.masterVolume = this.audioContext.createGain();
             this.musicVolume = this.audioContext.createGain();
-            this.musicVolume.connect(this.masterVolume);
             this.effectsVolume = this.audioContext.createGain();
+            this.musicVolume.connect(this.masterVolume);
             this.effectsVolume.connect(this.masterVolume);
             this.masterVolume.connect(this.audioContext.destination);
         }
@@ -424,8 +573,8 @@ var AudioManager = /** @class */ (function () {
         }
     }
     AudioManager.prototype.setBackgroundMusic = function (buffer, loop) {
+        var _this = this;
         if (this.songsPlaying.indexOf(buffer) == -1) {
-            var that = this;
             var source = this.audioContext.createBufferSource();
             source.buffer = buffer;
             source.loop = loop || false;
@@ -433,7 +582,7 @@ var AudioManager = /** @class */ (function () {
             source.start();
             source.onended = function () {
                 if (!loop)
-                    that.songsPlaying.splice(that.songsPlaying.indexOf(buffer), 1);
+                    _this.songsPlaying.splice(_this.songsPlaying.indexOf(buffer), 1);
             };
             this.songsPlaying.push(buffer);
         }
@@ -451,7 +600,7 @@ exports.default = AudioManager;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -594,7 +743,9 @@ var AssetLoader = /** @class */ (function () {
                     case 6:
                         _f[_g] = _h.sent();
                         return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                    case 7:
+                        this.completedTasks++;
+                        return [2 /*return*/];
                 }
             });
         });
@@ -605,55 +756,59 @@ exports.default = AssetLoader;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+function renderBox(p, b, ctx) {
+    ctx.fillStyle = b.fillStyle;
+    ctx.fillRect(p.x, p.y, b.width, b.height);
+}
+function renderLabel(p, l, ctx) {
+    ctx.fillStyle = l.color;
+    ctx.fillText(l.txt, p.x, p.y);
+}
+function renderSprite(p, s, ctx) {
+    ctx.drawImage(s.spriteSource, p.x, p.y);
+}
+function renderAnimatedSprite(p, sprite, ctx) {
+    var f = sprite.animationSheet[sprite.animationName];
+    if (sprite.flip) {
+        ctx.translate(p.x, 0);
+        ctx.scale(-1, 1);
+    }
+    ctx.drawImage(sprite.spriteSource, f.startX + sprite.currentFrame * f.frameWidth, f.startY, f.frameWidth, f.frameHeight, sprite.flip ? -sprite.scale * f.frameWidth : p.x, p.y, f.frameWidth * sprite.scale, f.frameHeight * sprite.scale);
+    if (sprite.flip)
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (sprite.isPlaying) {
+        if (sprite.currentFrame >= f.frames - 1)
+            sprite.currentFrame = 0;
+        else
+            sprite.currentFrame++;
+    }
+}
 exports.default = (function (ctx) { return function (scene) {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    var cur;
-    for (var e in scene.gameEntities) {
-        cur = scene.gameEntities[e];
-        // This basic shape is more of a testing thing
-        if (cur.hasComponents(['Box', 'Position'])) {
-            ctx.fillStyle = cur.Box.fillStyle;
-            ctx.fillRect(cur.Position.x, cur.Position.y, cur.Box.width, cur.Box.height);
-        }
-        if (cur.hasComponents(['Label', 'Position'])) {
-            ctx.fillStyle = cur.Label.color;
-            ctx.fillText(cur.Label.txt, cur.Position.x, cur.Position.y);
-        }
-        // Render a single sprite
-        if (cur.hasComponents(['Sprite', 'Position'])) {
-            ctx.drawImage(cur.Sprite.spriteSource, cur.Position.x, cur.Position.y);
-        }
-        // Render an animated sprite
-        if (cur.hasComponents(['AnimatedSprite', 'Position'])) {
-            var c = cur.get('AnimatedSprite');
-            var f = c.animationSheet[c.animationName];
-            if (c.flip) {
-                ctx.translate(cur.Position.x, 0);
-                ctx.scale(-1, 1);
-            }
-            ctx.drawImage(c.spriteSource, f.startX + c.currentFrame * f.frameWidth, f.startY, f.frameWidth, f.frameHeight, c.flip ? -c.scale * f.frameWidth : cur.Position.x, cur.Position.y, f.frameWidth * c.scale, f.frameHeight * c.scale);
-            if (c.flip)
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-            if (c.isPlaying) {
-                if (c.currentFrame >= f.frames - 1)
-                    c.currentFrame = 0;
-                else
-                    c.currentFrame++;
-            }
-        }
+    for (var _i = 0, _a = Object.values(scene.gameEntities).filter(function (e) { return e.hasComponent('Position'); }); _i < _a.length; _i++) {
+        var currentEntity = _a[_i];
+        var position = currentEntity.get('Position');
+        if (currentEntity.hasComponent('Box'))
+            renderBox(position, currentEntity.get('Box'), ctx);
+        if (currentEntity.hasComponent('Label'))
+            renderLabel(position, currentEntity.get('Label'), ctx);
+        if (currentEntity.hasComponent('Sprite'))
+            renderSprite(position, currentEntity.get('Sprite'), ctx);
+        if (currentEntity.hasComponent('AnimatedSprite'))
+            renderAnimatedSprite(position, currentEntity.get('AnimatedSprite'), ctx);
     }
 }; });
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -665,13 +820,13 @@ var Entity = /** @class */ (function () {
         Entity.prototype.count++;
     }
     Entity.prototype.addComponent = function (component) {
-        this[component.constructor.name] = component;
+        this[component.name] = component;
     };
     Entity.prototype.removeComponent = function (componentName) {
         delete this[componentName];
     };
     Entity.prototype.hasComponent = function (componentName) {
-        return !!this[componentName];
+        return this[componentName] != null;
     };
     Entity.prototype.hasComponents = function (componentArray) {
         var len = componentArray.length;
@@ -693,6 +848,10 @@ var Entity = /** @class */ (function () {
                 return this[name];
             case 'InputMapping':
                 return this[name];
+            case 'Label':
+                return this[name];
+            case 'Box':
+                return this[name];
             default:
                 return this[name];
         }
@@ -701,101 +860,6 @@ var Entity = /** @class */ (function () {
 }());
 exports.default = Entity;
 Entity.prototype.count = 0;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/* eslint-disable @typescript-eslint/no-explicit-any */
-var Position = /** @class */ (function () {
-    function Position(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-    return Position;
-}());
-exports.Position = Position;
-var Velocity = /** @class */ (function () {
-    function Velocity(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-    return Velocity;
-}());
-exports.Velocity = Velocity;
-var Label = /** @class */ (function () {
-    function Label(txt, options) {
-        this.txt = txt;
-        this.color = options.color || '#000';
-        this.font = options.font || 'monospace';
-        this.isVisible = options.isVisible || true;
-    }
-    return Label;
-}());
-exports.Label = Label;
-var Sprite = /** @class */ (function () {
-    function Sprite(spriteSource) {
-        this.spriteSource = spriteSource;
-    }
-    return Sprite;
-}());
-exports.Sprite = Sprite;
-var AnimatedSprite = /** @class */ (function () {
-    function AnimatedSprite(spriteSource, animationSheet, options) {
-        this.spriteSource = spriteSource;
-        this.animationSheet = animationSheet;
-        if (options === undefined)
-            var options = {};
-        // If there's no default animation set, we'll use the first one defined in the JSON object
-        this.animationName = options.animationName || Object.keys(animationSheet)[0];
-        this.scale = options.scale || 1.0;
-        this.loop = options.loop || true;
-        this.isPlaying = options.isPlaying || true;
-        this.flip = options.flip || false;
-        this.currentFrame = 0;
-    }
-    return AnimatedSprite;
-}());
-exports.AnimatedSprite = AnimatedSprite;
-var AudioSource = /** @class */ (function () {
-    function AudioSource(audioBuffer) {
-        this.audioBuffer = audioBuffer;
-    }
-    return AudioSource;
-}());
-exports.AudioSource = AudioSource;
-var Box = /** @class */ (function () {
-    function Box(width, height, fillStyle) {
-        this.width = width;
-        this.height = height;
-        this.fillStyle = fillStyle;
-    }
-    return Box;
-}());
-exports.Box = Box;
-var BoxCollider = /** @class */ (function () {
-    function BoxCollider(width, height) {
-        this.width = width;
-        this.height = height;
-    }
-    return BoxCollider;
-}());
-exports.BoxCollider = BoxCollider;
-var InputMapping = /** @class */ (function () {
-    // for eg. mapping = [ {name: 'up', code: 38} ]
-    function InputMapping(mapping) {
-        this.mapping = mapping;
-        for (var i = 0; i < mapping.length; i++) {
-            this[mapping[i].name] = false;
-        }
-    }
-    return InputMapping;
-}());
-exports.InputMapping = InputMapping;
 
 
 /***/ }),
@@ -808,7 +872,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InputMappingSystem = {
     systemId: 'inputMappingSystem',
     requiredComponents: ['InputMapping'],
-    update: function (entity, services) {
+    update: function (entity, scene, services) {
         var inputMapping = entity['InputMapping'];
         for (var i = 0; i < inputMapping.mapping.length; i++) {
             var c = inputMapping.mapping[i];
@@ -835,7 +899,7 @@ exports.InputMappingSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 var loading_1 = __webpack_require__(/*! ./scene/loading */ "./src/scene/loading.ts");
 var ingame_1 = __webpack_require__(/*! ./scene/ingame */ "./src/scene/ingame.ts");
 setCanvasSize(document.querySelector('canvas'));
@@ -864,7 +928,7 @@ function setCanvasSize(c) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 exports.ingame = {
     sceneId: 'ingame',
     alwaysInitialize: true,
@@ -896,7 +960,7 @@ exports.ingame = {
 var wolfMovementSystem = {
     systemId: 'wolfMovementSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
-    update: function (entity, services) {
+    update: function (entity, scene, services) {
         var sprite = entity.get('AnimatedSprite');
         var pos = entity.get('Position');
         var inputMapping = entity.get('InputMapping');
@@ -929,11 +993,11 @@ var wolfMovementSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 var LoadingIndicatorSystem = {
     systemId: 'labelSystem',
     requiredComponents: ['InputMapping', 'Label'],
-    update: function (entity, services) {
+    update: function (entity, scene, services) {
         console.log(entity);
         var label = entity['Label'];
         var inputMapping = entity['InputMapping'];

@@ -3,7 +3,7 @@ import { SceneOptions, SceneServices, Scene,System,  InputMappingSystem, Entity,
 const LoadingIndicatorSystem: System = {
     systemId: 'labelSystem',
     requiredComponents: ['InputMapping', 'Label'],
-    update: function (entity: Entity, services: SceneServices) {
+    update: function (entity: Entity, scene: Scene, services: SceneServices) {
         console.log(entity);
         let label = entity['Label'] as Label;
         let inputMapping = entity['InputMapping'] as InputMapping;

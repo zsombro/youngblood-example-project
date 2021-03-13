@@ -13,7 +13,7 @@
   "author": "me",
   "license": "ISC",
   "dependencies": {
-    "youngblood": "^0.2.3"
+    "youngblood": "^0.2.4"
   },
   "devDependencies": {
     "ts-loader": "^5.3.3",

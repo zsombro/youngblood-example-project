@@ -48,7 +48,7 @@ export var ingame: SceneOptions = {
 const wolfMovementSystem: System = {
     systemId: 'wolfMovementSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
-    update: function (entity: Entity, services: SceneServices) {
+    update: function (entity: Entity, scene: Scene, services: SceneServices) {
         const sprite = entity.get('AnimatedSprite');
         const pos = entity.get('Position');
         const inputMapping = entity.get('InputMapping');
