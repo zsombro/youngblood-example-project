@@ -9,6 +9,10 @@
             "url": "assets/wolf_info.json"
         },
         {
+            "type": "json",
+            "url": "assets/forest.json"
+        },
+        {
             "type": "image",
             "url": "assets/background.jpg"
         }

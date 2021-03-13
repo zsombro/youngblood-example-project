@@ -1,0 +1,15 @@
+{ "columns":8,
+ "image":"..\/..\/..\/_game assets\/deepforest16colourtileset_windows\/DeepForestPackNA\/Tileset\/DeepForestTileset.png",
+ "imageheight":160,
+ "imagewidth":128,
+ "margin":0,
+ "name":"Deep forest",
+ "spacing":0,
+ "tilecount":80,
+ "tiledversion":"2020.08.05",
+ "tileheight":16,
+ "tilewidth":16,
+ "transparentcolor":"#000000",
+ "type":"tileset",
+ "version":1.4
+}
