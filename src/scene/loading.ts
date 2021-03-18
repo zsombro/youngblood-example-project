@@ -4,7 +4,6 @@ const LoadingIndicatorSystem: System = {
     systemId: 'labelSystem',
     requiredComponents: ['InputMapping', 'Label'],
     update: function (entity: Entity, scene: Scene, services: SceneServices) {
-        console.log(entity);
         let label = entity['Label'] as Label;
         let inputMapping = entity['InputMapping'] as InputMapping;
         

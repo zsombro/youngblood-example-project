@@ -9,7 +9,10 @@ import {
     AnimationSheet, 
     InputMapping, 
     System, 
-    InputMappingSystem 
+    InputMappingSystem,
+    TiledMap,
+    TiledMapData,
+    TiledSheetData
 } from "youngblood";
 
 export var ingame: SceneOptions = {
@@ -19,17 +22,18 @@ export var ingame: SceneOptions = {
         context.registerSystem(InputMappingSystem);
         context.registerSystem(wolfMovementSystem);
 
-        const bg_image = <HTMLImageElement>services.assets.get('assets/background');
-        const background = new Entity();
-        background.addComponent(new Position(-150, -300));
-        background.addComponent(new Sprite(bg_image));
+        const tileset = <TiledSheetData>services.assets.get('assets/forest_tileset');
+        const tilemap = <TiledMapData>services.assets.get('assets/forest');
+        const map = new Entity();
+        map.addComponent(new Position(0, 0));
+        map.addComponent(new TiledMap(tilemap, tileset, { scale: 2.5 }));
 
-        context.addEntity(background);
+        context.addEntity(map);
 
         const wolf_sheet = <HTMLImageElement>services.assets.get('assets/80x48Wolf_FullSheet');
         const wolf_info = <AnimationSheet>services.assets.get('assets/wolf_info');
         const wolf = new Entity();
-        wolf.addComponent(new Position(100, 445));
+        wolf.addComponent(new Position(100, 380));
         wolf.addComponent(new InputMapping([
             { name: 'right', code: 39 },
             { name: 'left', code: 37 }
@@ -38,7 +42,7 @@ export var ingame: SceneOptions = {
             animationName: 'idle',
             isPlaying: true,
             loop: true,
-            scale: 5.0
+            scale: 3.0
         }));
 
         context.addEntity(wolf);

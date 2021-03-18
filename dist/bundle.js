@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/youngblood/bundle/youngblood.js":
-/*!******************************************************!*\
-  !*** ./node_modules/youngblood/bundle/youngblood.js ***!
-  \******************************************************/
+/***/ "../youngblood/bundle/youngblood.js":
+/*!******************************************!*\
+  !*** ../youngblood/bundle/youngblood.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -186,42 +186,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Scene = /** @class */ (function () {
-    function Scene(options) {
-        var _this = this;
-        this.sceneId = options.sceneId;
-        this.initialized = false;
-        this.alwaysInitialize = options.alwaysInitialize || true;
-        this.initCallback = options.init;
-        this.gameEntities = {};
-        this.systems = {};
-        if (options.systems)
-            options.systems.forEach(function (s) { return _this.registerSystem(s); });
-    }
-    Scene.prototype.registerSystem = function (system) {
-        this.systems[system.systemId] = system;
-    };
-    Scene.prototype.unregisterSystem = function (system) {
-        delete this.systems[system.systemId];
-    };
-    Scene.prototype.addEntity = function (entity) {
-        this.gameEntities[entity.id] = entity;
-    };
-    Scene.prototype.removeEntity = function (id) {
-        delete this.gameEntities[id];
-    };
-    return Scene;
-}());
-exports.Scene = Scene;
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -368,6 +332,42 @@ exports.InputMapping = InputMapping;
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Scene = /** @class */ (function () {
+    function Scene(options) {
+        var _this = this;
+        this.sceneId = options.sceneId;
+        this.initialized = false;
+        this.alwaysInitialize = options.alwaysInitialize || true;
+        this.initCallback = options.init;
+        this.gameEntities = {};
+        this.systems = {};
+        if (options.systems)
+            options.systems.forEach(function (s) { return _this.registerSystem(s); });
+    }
+    Scene.prototype.registerSystem = function (system) {
+        this.systems[system.systemId] = system;
+    };
+    Scene.prototype.unregisterSystem = function (system) {
+        delete this.systems[system.systemId];
+    };
+    Scene.prototype.addEntity = function (entity) {
+        this.gameEntities[entity.id] = entity;
+    };
+    Scene.prototype.removeEntity = function (id) {
+        delete this.gameEntities[id];
+    };
+    return Scene;
+}());
+exports.Scene = Scene;
+
+
+/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -376,11 +376,11 @@ exports.InputMapping = InputMapping;
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = __webpack_require__(3);
 exports.Game = game_1.default;
-var scene_1 = __webpack_require__(0);
+var scene_1 = __webpack_require__(1);
 exports.Scene = scene_1.Scene;
 var entity_1 = __webpack_require__(8);
 exports.Entity = entity_1.default;
-var component_1 = __webpack_require__(1);
+var component_1 = __webpack_require__(0);
 exports.Position = component_1.Position;
 exports.Velocity = component_1.Velocity;
 exports.Sprite = component_1.Sprite;
@@ -388,9 +388,11 @@ exports.AnimatedSprite = component_1.AnimatedSprite;
 exports.Box = component_1.Box;
 exports.InputMapping = component_1.InputMapping;
 exports.Label = component_1.Label;
-var component_2 = __webpack_require__(1);
+var tiledMap_1 = __webpack_require__(9);
+exports.TiledMap = tiledMap_1.default;
+var component_2 = __webpack_require__(0);
 exports.Component = component_2.default;
-var system_1 = __webpack_require__(9);
+var system_1 = __webpack_require__(10);
 exports.InputMappingSystem = system_1.InputMappingSystem;
 
 
@@ -401,7 +403,7 @@ exports.InputMappingSystem = system_1.InputMappingSystem;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var scene_1 = __webpack_require__(0);
+var scene_1 = __webpack_require__(1);
 var inputmanager_1 = __webpack_require__(4);
 var audiomanager_1 = __webpack_require__(5);
 var assetloader_1 = __webpack_require__(6);
@@ -606,6 +608,17 @@ exports.default = AudioManager;
 "use strict";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -668,6 +681,75 @@ function fetchObject(url) {
         });
     });
 }
+function fetchTiledMap(url) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, data, result, _i, _a, layer, _b, _c, _d, _e, _f;
+        return __generator(this, function (_g) {
+            switch (_g.label) {
+                case 0: return [4 /*yield*/, fetch(url)];
+                case 1:
+                    response = _g.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2:
+                    data = _g.sent();
+                    result = {
+                        width: data.width,
+                        height: data.height,
+                        layers: [],
+                    };
+                    _i = 0, _a = data.layers;
+                    _g.label = 3;
+                case 3:
+                    if (!(_i < _a.length)) return [3 /*break*/, 9];
+                    layer = _a[_i];
+                    _b = layer.type;
+                    switch (_b) {
+                        case 'imagelayer': return [3 /*break*/, 4];
+                        case 'tilelayer': return [3 /*break*/, 6];
+                        case 'objectgroup': return [3 /*break*/, 7];
+                    }
+                    return [3 /*break*/, 8];
+                case 4:
+                    _d = (_c = result.layers).push;
+                    _e = [__assign({}, layer)];
+                    _f = {};
+                    return [4 /*yield*/, fetchImage(layer.image)];
+                case 5:
+                    _d.apply(_c, [__assign.apply(void 0, _e.concat([(_f.image = _g.sent(), _f)]))]);
+                    return [3 /*break*/, 8];
+                case 6:
+                    result.layers.push(__assign(__assign({}, layer), { data: layer.data }));
+                    return [3 /*break*/, 8];
+                case 7:
+                    result.layers.push(__assign(__assign({}, layer), { objects: layer.objects }));
+                    return [3 /*break*/, 8];
+                case 8:
+                    _i++;
+                    return [3 /*break*/, 3];
+                case 9: return [2 /*return*/, result];
+            }
+        });
+    });
+}
+function fetchTiledSet(url) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, data, _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0: return [4 /*yield*/, fetch(url)];
+                case 1:
+                    response = _c.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2:
+                    data = _c.sent();
+                    _a = [__assign({}, data)];
+                    _b = {};
+                    return [4 /*yield*/, fetchImage(data.image)];
+                case 3: return [2 /*return*/, __assign.apply(void 0, _a.concat([(_b.image = _c.sent(), _b)]))];
+            }
+        });
+    });
+}
 function getExtension(url) {
     var extensions = url.match(/\.[a-zA-Z0-9]+/g);
     return extensions[extensions.length - 1];
@@ -709,9 +791,9 @@ var AssetLoader = /** @class */ (function () {
     };
     AssetLoader.prototype.fetchAsset = function (asset) {
         return __awaiter(this, void 0, void 0, function () {
-            var extension, assetName, _a, _b, _c, _d, _e, _f, _g;
-            return __generator(this, function (_h) {
-                switch (_h.label) {
+            var extension, assetName, _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+            return __generator(this, function (_m) {
+                switch (_m.label) {
                     case 0:
                         extension = getExtension(asset.url);
                         assetName = asset.url.replace(extension, '');
@@ -720,30 +802,46 @@ var AssetLoader = /** @class */ (function () {
                             case 'audio': return [3 /*break*/, 1];
                             case 'image': return [3 /*break*/, 3];
                             case 'json': return [3 /*break*/, 5];
+                            case 'tiled-map': return [3 /*break*/, 7];
+                            case 'tiled-set': return [3 /*break*/, 9];
                         }
-                        return [3 /*break*/, 7];
+                        return [3 /*break*/, 11];
                     case 1:
                         _b = this.assets;
                         _c = assetName;
                         return [4 /*yield*/, fetchAudio(asset.url)];
                     case 2:
-                        _b[_c] = _h.sent();
-                        return [3 /*break*/, 7];
+                        _b[_c] = _m.sent();
+                        return [3 /*break*/, 11];
                     case 3:
                         _d = this.assets;
                         _e = assetName;
                         return [4 /*yield*/, fetchImage(asset.url)];
                     case 4:
-                        _d[_e] = _h.sent();
-                        return [3 /*break*/, 7];
+                        _d[_e] = _m.sent();
+                        return [3 /*break*/, 11];
                     case 5:
                         _f = this.assets;
                         _g = assetName;
                         return [4 /*yield*/, fetchObject(asset.url)];
                     case 6:
-                        _f[_g] = _h.sent();
-                        return [3 /*break*/, 7];
+                        _f[_g] = _m.sent();
+                        return [3 /*break*/, 11];
                     case 7:
+                        _h = this.assets;
+                        _j = assetName;
+                        return [4 /*yield*/, fetchTiledMap(asset.url)];
+                    case 8:
+                        _h[_j] = _m.sent();
+                        return [3 /*break*/, 11];
+                    case 9:
+                        _k = this.assets;
+                        _l = assetName;
+                        return [4 /*yield*/, fetchTiledSet(asset.url)];
+                    case 10:
+                        _k[_l] = _m.sent();
+                        _m.label = 11;
+                    case 11:
                         this.completedTasks++;
                         return [2 /*return*/];
                 }
@@ -789,6 +887,36 @@ function renderAnimatedSprite(p, sprite, ctx) {
             sprite.currentFrame++;
     }
 }
+function renderImageLayer(position, layer, ctx) {
+    ctx.drawImage(layer.image, position.x + layer.x, position.y + layer.y, ctx.canvas.width, ctx.canvas.height);
+}
+function getTileById(id, sheet) {
+    return {
+        x: (id % sheet.columns) * sheet.tilewidth - sheet.tilewidth,
+        y: Math.floor(id / sheet.columns) * sheet.tileheight,
+    };
+}
+function renderTileLayer(position, layer, sheet, scalingFactor, ctx) {
+    for (var i = 0; i < layer.data.length; i++) {
+        if (layer.data[i] === 0)
+            continue;
+        var _a = getTileById(layer.data[i], sheet), x = _a.x, y = _a.y;
+        ctx.drawImage(sheet.image, x, y, sheet.tilewidth, sheet.tileheight, position.x + (i % layer.width) * (sheet.tilewidth * scalingFactor), position.y + Math.floor(i / layer.width) * (sheet.tileheight * scalingFactor), sheet.tilewidth * scalingFactor, sheet.tileheight * scalingFactor);
+    }
+}
+function renderTiledMap(position, map, ctx) {
+    for (var _i = 0, _a = map.data.layers; _i < _a.length; _i++) {
+        var layer = _a[_i];
+        switch (layer.type) {
+            case 'imagelayer':
+                renderImageLayer(position, layer, ctx);
+                break;
+            case 'tilelayer':
+                renderTileLayer(position, layer, map.spriteSheet, map.options.scale, ctx);
+                break;
+        }
+    }
+}
 exports.default = (function (ctx) { return function (scene) {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -803,6 +931,8 @@ exports.default = (function (ctx) { return function (scene) {
             renderSprite(position, currentEntity.get('Sprite'), ctx);
         if (currentEntity.hasComponent('AnimatedSprite'))
             renderAnimatedSprite(position, currentEntity.get('AnimatedSprite'), ctx);
+        if (currentEntity.hasComponent('TiledMap'))
+            renderTiledMap(position, currentEntity.get('TiledMap'), ctx);
     }
 }; });
 
@@ -852,6 +982,8 @@ var Entity = /** @class */ (function () {
                 return this[name];
             case 'Box':
                 return this[name];
+            case 'TiledMap':
+                return this[name];
             default:
                 return this[name];
         }
@@ -868,6 +1000,42 @@ Entity.prototype.count = 0;
 
 "use strict";
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var component_1 = __webpack_require__(0);
+var TiledMap = /** @class */ (function (_super) {
+    __extends(TiledMap, _super);
+    function TiledMap(data, spriteSheet, options) {
+        if (options === void 0) { options = { scale: 1 }; }
+        var _this = _super.call(this, 'TiledMap') || this;
+        _this.data = data;
+        _this.spriteSheet = spriteSheet;
+        _this.options = options;
+        return _this;
+    }
+    return TiledMap;
+}(component_1.default));
+exports.default = TiledMap;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InputMappingSystem = {
     systemId: 'inputMappingSystem',
@@ -878,6 +1046,13 @@ exports.InputMappingSystem = {
             var c = inputMapping.mapping[i];
             inputMapping[c.name] = services.input.isPressed(c.code);
         }
+    },
+};
+exports.TiledMapSystem = {
+    systemId: 'tiledMapSystem',
+    requiredComponents: ['TiledMap', 'Position', 'InputMapping'],
+    update: function (entity, scene, services) {
+        var mapData = entity['TiledMap'];
     },
 };
 
@@ -899,21 +1074,14 @@ exports.InputMappingSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
 var loading_1 = __webpack_require__(/*! ./scene/loading */ "./src/scene/loading.ts");
 var ingame_1 = __webpack_require__(/*! ./scene/ingame */ "./src/scene/ingame.ts");
-setCanvasSize(document.querySelector('canvas'));
 new youngblood_1.Game()
     .addScene(loading_1.loading)
     .addScene(ingame_1.ingame)
     .setFramerate(20)
     .startRendering();
-function setCanvasSize(c) {
-    if (c) {
-        c.width = window.innerWidth;
-        c.height = window.innerHeight;
-    }
-}
 
 
 /***/ }),
@@ -928,22 +1096,23 @@ function setCanvasSize(c) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
 exports.ingame = {
     sceneId: 'ingame',
     alwaysInitialize: true,
     init: function (context, services) {
         context.registerSystem(youngblood_1.InputMappingSystem);
         context.registerSystem(wolfMovementSystem);
-        var bg_image = services.assets.get('assets/background');
-        var background = new youngblood_1.Entity();
-        background.addComponent(new youngblood_1.Position(-150, -300));
-        background.addComponent(new youngblood_1.Sprite(bg_image));
-        context.addEntity(background);
+        var tileset = services.assets.get('assets/forest_tileset');
+        var tilemap = services.assets.get('assets/forest');
+        var map = new youngblood_1.Entity();
+        map.addComponent(new youngblood_1.Position(0, 0));
+        map.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
+        context.addEntity(map);
         var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
         var wolf_info = services.assets.get('assets/wolf_info');
         var wolf = new youngblood_1.Entity();
-        wolf.addComponent(new youngblood_1.Position(100, 445));
+        wolf.addComponent(new youngblood_1.Position(100, 380));
         wolf.addComponent(new youngblood_1.InputMapping([
             { name: 'right', code: 39 },
             { name: 'left', code: 37 }
@@ -952,7 +1121,7 @@ exports.ingame = {
             animationName: 'idle',
             isPlaying: true,
             loop: true,
-            scale: 5.0
+            scale: 3.0
         }));
         context.addEntity(wolf);
     }
@@ -993,12 +1162,11 @@ var wolfMovementSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
 var LoadingIndicatorSystem = {
     systemId: 'labelSystem',
     requiredComponents: ['InputMapping', 'Label'],
     update: function (entity, scene, services) {
-        console.log(entity);
         var label = entity['Label'];
         var inputMapping = entity['InputMapping'];
         if (label.isVisible && inputMapping.proceed) {

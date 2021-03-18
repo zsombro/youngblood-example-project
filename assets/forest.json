@@ -11,7 +11,7 @@
        "layers": [
               {
                      "id": 2,
-                     "image": "mountains04-512-x-256_full.png",
+                     "image": "assets/mountains04-512-x-256_full.png",
                      "name": "background",
                      "opacity": 1,
                      "type": "imagelayer",

@@ -1,5 +1,5 @@
 { "columns":8,
- "image":"..\/..\/..\/_game assets\/deepforest16colourtileset_windows\/DeepForestPackNA\/Tileset\/DeepForestTileset.png",
+ "image":"assets/DeepForestTileset.png",
  "imageheight":160,
  "imagewidth":128,
  "margin":0,

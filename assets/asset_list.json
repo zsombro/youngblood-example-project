@@ -9,8 +9,12 @@
             "url": "assets/wolf_info.json"
         },
         {
-            "type": "json",
+            "type": "tiled-map",
             "url": "assets/forest.json"
+        },
+        {
+            "type": "tiled-set",
+            "url": "assets/forest_tileset.json"
         },
         {
             "type": "image",
