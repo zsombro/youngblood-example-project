@@ -20,13 +20,18 @@ export var ingame: SceneOptions = {
     alwaysInitialize: true,
     init: function (context: Scene, services: SceneServices) {
         context.registerSystem(InputMappingSystem);
-        context.registerSystem(wolfMovementSystem);
+        context.registerSystem(wolfAnimationSystem);
+        context.registerSystem(mapMovementSystem);
 
         const tileset = <TiledSheetData>services.assets.get('assets/forest_tileset');
         const tilemap = <TiledMapData>services.assets.get('assets/forest');
         const map = new Entity();
         map.addComponent(new Position(0, 0));
         map.addComponent(new TiledMap(tilemap, tileset, { scale: 2.5 }));
+        map.addComponent(new InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
 
         context.addEntity(map);
 
@@ -49,8 +54,8 @@ export var ingame: SceneOptions = {
     }
 }
 
-const wolfMovementSystem: System = {
-    systemId: 'wolfMovementSystem',
+const wolfAnimationSystem: System = {
+    systemId: 'wolfAnimationSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
     update: function (entity: Entity, scene: Scene, services: SceneServices) {
         const sprite = entity.get('AnimatedSprite');
@@ -60,13 +65,26 @@ const wolfMovementSystem: System = {
         if (inputMapping.right) {
             sprite.animationName = 'running';
             sprite.flip = false;
-            pos.x += 20;
         } else if (inputMapping.left) {
             sprite.animationName = 'running';
             sprite.flip = true;
-            pos.x -= 20;
         } else {
             sprite.animationName = 'idle';
+        }
+    }
+}
+
+const mapMovementSystem: System = {
+    systemId: 'mapMovementSystem',
+    requiredComponents: ['Position', 'TiledMap'],
+    update: function (entity, scene, services) {
+        const pos = entity.get('Position');
+        const inputMapping = entity.get('InputMapping');
+
+        if (inputMapping.right) {
+            pos.x -= 20;
+        } else if (inputMapping.left) {
+            pos.x += 20;
         }
     }
 }

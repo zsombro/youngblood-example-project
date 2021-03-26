@@ -888,7 +888,7 @@ function renderAnimatedSprite(p, sprite, ctx) {
     }
 }
 function renderImageLayer(position, layer, ctx) {
-    ctx.drawImage(layer.image, position.x + layer.x, position.y + layer.y, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(layer.image, layer.x, layer.y, ctx.canvas.width, ctx.canvas.height);
 }
 function getTileById(id, sheet) {
     return {
@@ -1102,12 +1102,17 @@ exports.ingame = {
     alwaysInitialize: true,
     init: function (context, services) {
         context.registerSystem(youngblood_1.InputMappingSystem);
-        context.registerSystem(wolfMovementSystem);
+        context.registerSystem(wolfAnimationSystem);
+        context.registerSystem(mapMovementSystem);
         var tileset = services.assets.get('assets/forest_tileset');
         var tilemap = services.assets.get('assets/forest');
         var map = new youngblood_1.Entity();
         map.addComponent(new youngblood_1.Position(0, 0));
         map.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
+        map.addComponent(new youngblood_1.InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
         context.addEntity(map);
         var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
         var wolf_info = services.assets.get('assets/wolf_info');
@@ -1126,8 +1131,8 @@ exports.ingame = {
         context.addEntity(wolf);
     }
 };
-var wolfMovementSystem = {
-    systemId: 'wolfMovementSystem',
+var wolfAnimationSystem = {
+    systemId: 'wolfAnimationSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
     update: function (entity, scene, services) {
         var sprite = entity.get('AnimatedSprite');
@@ -1136,15 +1141,27 @@ var wolfMovementSystem = {
         if (inputMapping.right) {
             sprite.animationName = 'running';
             sprite.flip = false;
-            pos.x += 20;
         }
         else if (inputMapping.left) {
             sprite.animationName = 'running';
             sprite.flip = true;
-            pos.x -= 20;
         }
         else {
             sprite.animationName = 'idle';
+        }
+    }
+};
+var mapMovementSystem = {
+    systemId: 'mapMovementSystem',
+    requiredComponents: ['Position', 'TiledMap'],
+    update: function (entity, scene, services) {
+        var pos = entity.get('Position');
+        var inputMapping = entity.get('InputMapping');
+        if (inputMapping.right) {
+            pos.x -= 20;
+        }
+        else if (inputMapping.left) {
+            pos.x += 20;
         }
     }
 };
