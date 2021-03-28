@@ -77,7 +77,7 @@ const wolfAnimationSystem: System = {
 const mapMovementSystem: System = {
     systemId: 'mapMovementSystem',
     requiredComponents: ['Position', 'TiledMap'],
-    update: function (entity, scene, services) {
+    update: function (entity: Entity, scene: Scene, services: SceneServices) {
         const pos = entity.get('Position');
         const inputMapping = entity.get('InputMapping');
 
