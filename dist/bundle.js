@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "../youngblood/bundle/youngblood.js":
-/*!******************************************!*\
-  !*** ../youngblood/bundle/youngblood.js ***!
-  \******************************************/
+/***/ "./node_modules/youngblood/bundle/youngblood.js":
+/*!******************************************************!*\
+  !*** ./node_modules/youngblood/bundle/youngblood.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -890,17 +890,18 @@ function renderAnimatedSprite(p, sprite, ctx) {
 function renderImageLayer(position, layer, ctx) {
     ctx.drawImage(layer.image, layer.x, layer.y, ctx.canvas.width, ctx.canvas.height);
 }
-function getTileById(id, sheet) {
+function getTilesheetCoordinateById(id, sheet) {
     return {
         x: (id % sheet.columns) * sheet.tilewidth - sheet.tilewidth,
         y: Math.floor(id / sheet.columns) * sheet.tileheight,
     };
 }
+exports.getTilesheetCoordinateById = getTilesheetCoordinateById;
 function renderTileLayer(position, layer, sheet, scalingFactor, ctx) {
     for (var i = 0; i < layer.data.length; i++) {
         if (layer.data[i] === 0)
             continue;
-        var _a = getTileById(layer.data[i], sheet), x = _a.x, y = _a.y;
+        var _a = getTilesheetCoordinateById(layer.data[i], sheet), x = _a.x, y = _a.y;
         ctx.drawImage(sheet.image, x, y, sheet.tilewidth, sheet.tileheight, position.x + (i % layer.width) * (sheet.tilewidth * scalingFactor), position.y + Math.floor(i / layer.width) * (sheet.tileheight * scalingFactor), sheet.tilewidth * scalingFactor, sheet.tileheight * scalingFactor);
     }
 }
@@ -1074,7 +1075,7 @@ exports.TiledMapSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 var loading_1 = __webpack_require__(/*! ./scene/loading */ "./src/scene/loading.ts");
 var ingame_1 = __webpack_require__(/*! ./scene/ingame */ "./src/scene/ingame.ts");
 new youngblood_1.Game()
@@ -1096,7 +1097,7 @@ new youngblood_1.Game()
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 exports.ingame = {
     sceneId: 'ingame',
     alwaysInitialize: true,
@@ -1179,7 +1180,7 @@ var mapMovementSystem = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 var LoadingIndicatorSystem = {
     systemId: 'labelSystem',
     requiredComponents: ['InputMapping', 'Label'],
