@@ -16,25 +16,27 @@ const LoadingIndicatorSystem: System = {
 export var loading: SceneOptions = {
     sceneId: 'loading',
     alwaysInitialize: false,
+    systems: [InputMappingSystem, LoadingIndicatorSystem],
     init: function (context: Scene, services: SceneServices) {
-        context.registerSystem(InputMappingSystem);
-        context.registerSystem(LoadingIndicatorSystem);
-
         let handler = new Entity();
         handler.addComponent(new InputMapping([
             { name: 'proceed', code: 13 }
         ]));
 
-        handler.addComponent(new Label("Loading complete. Press Enter to proceed", { 
-            isVisible: false,
+        const loadingLabel = new Label("LOADING...", {
+            isVisible: true,
             color: '#000',
-            font: 'Arial' 
-        }));
+            font: '20px monospace',
+        });
 
-        handler.addComponent(new Position(10, 10));
+        handler.addComponent(loadingLabel);
+        handler.addComponent(new Position(30, 30));
 
         context.addEntity(handler);
         
-        services.assets.load('assets/asset_list.json').then((): void => { console.log('Assets loaded'); });
+        services.assets.load('assets/asset_list.json').then((): void => {
+            loadingLabel.txt = 'LOADING COMPLETE. PRESS ENTER TO CONTINUE';
+            console.log('Assets loaded'); 
+        });
     }
 };

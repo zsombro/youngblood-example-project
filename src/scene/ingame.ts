@@ -4,7 +4,6 @@ import {
     SceneServices, 
     Entity, 
     Position, 
-    Sprite, 
     AnimatedSprite, 
     AnimationSheet, 
     InputMapping, 
@@ -14,45 +13,6 @@ import {
     TiledMapData,
     TiledSheetData
 } from "youngblood";
-
-export var ingame: SceneOptions = {
-    sceneId: 'ingame',
-    alwaysInitialize: true,
-    init: function (context: Scene, services: SceneServices) {
-        context.registerSystem(InputMappingSystem);
-        context.registerSystem(wolfAnimationSystem);
-        context.registerSystem(mapMovementSystem);
-
-        const tileset = <TiledSheetData>services.assets.get('assets/forest_tileset');
-        const tilemap = <TiledMapData>services.assets.get('assets/forest');
-        const map = new Entity();
-        map.addComponent(new Position(0, 0));
-        map.addComponent(new TiledMap(tilemap, tileset, { scale: 2.5 }));
-        map.addComponent(new InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-
-        context.addEntity(map);
-
-        const wolf_sheet = <HTMLImageElement>services.assets.get('assets/80x48Wolf_FullSheet');
-        const wolf_info = <AnimationSheet>services.assets.get('assets/wolf_info');
-        const wolf = new Entity();
-        wolf.addComponent(new Position(100, 380));
-        wolf.addComponent(new InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-        wolf.addComponent(new AnimatedSprite(wolf_sheet, wolf_info, {
-            animationName: 'idle',
-            isPlaying: true,
-            loop: true,
-            scale: 3.0
-        }));
-
-        context.addEntity(wolf);
-    }
-}
 
 const wolfAnimationSystem: System = {
     systemId: 'wolfAnimationSystem',
@@ -86,5 +46,41 @@ const mapMovementSystem: System = {
         } else if (inputMapping.left) {
             pos.x += 20;
         }
+    }
+}
+
+export var ingame: SceneOptions = {
+    sceneId: 'ingame',
+    alwaysInitialize: true,
+    systems: [InputMappingSystem, wolfAnimationSystem, mapMovementSystem],
+    init: function (context: Scene, services: SceneServices) {
+        const tileset = <TiledSheetData>services.assets.get('assets/forest_tileset');
+        const tilemap = <TiledMapData>services.assets.get('assets/forest');
+        const map = new Entity();
+        map.addComponent(new Position(0, 0));
+        map.addComponent(new TiledMap(tilemap, tileset, { scale: 2.5 }));
+        map.addComponent(new InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
+
+        context.addEntity(map);
+
+        const wolf_sheet = <HTMLImageElement>services.assets.get('assets/80x48Wolf_FullSheet');
+        const wolf_info = <AnimationSheet>services.assets.get('assets/wolf_info');
+        const wolf = new Entity();
+        wolf.addComponent(new Position(100, 380));
+        wolf.addComponent(new InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
+        wolf.addComponent(new AnimatedSprite(wolf_sheet, wolf_info, {
+            animationName: 'idle',
+            isPlaying: true,
+            loop: true,
+            scale: 3.0
+        }));
+
+        context.addEntity(wolf);
     }
 }

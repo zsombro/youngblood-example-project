@@ -344,13 +344,17 @@ var Scene = /** @class */ (function () {
         this.sceneId = options.sceneId;
         this.initialized = false;
         this.alwaysInitialize = options.alwaysInitialize || true;
-        this.initCallback = options.init;
+        this.initCallback = options.init || (function () { });
         this.gameEntities = {};
         this.systems = {};
         if (options.systems)
             options.systems.forEach(function (s) { return _this.registerSystem(s); });
+        if (options.entities)
+            options.entities.forEach(function (e) { return _this.addEntity(e); });
     }
     Scene.prototype.registerSystem = function (system) {
+        if (this.systems[system.systemId])
+            throw new Error("System with system ID '" + system.systemId + "' has already been registered");
         this.systems[system.systemId] = system;
     };
     Scene.prototype.unregisterSystem = function (system) {
@@ -472,7 +476,6 @@ var Game = /** @class */ (function () {
      */
     Game.prototype.addScene = function (sceneOptions) {
         this.gameScenes[sceneOptions.sceneId] = new scene_1.Scene(sceneOptions);
-        this.gameScenes[sceneOptions.sceneId].assets = this.services.assets;
         if (this.currentScene == null)
             this.switchToScene(sceneOptions.sceneId);
         console.info("Scene added: " + sceneOptions.sceneId);
@@ -865,8 +868,11 @@ function renderBox(p, b, ctx) {
     ctx.fillRect(p.x, p.y, b.width, b.height);
 }
 function renderLabel(p, l, ctx) {
-    ctx.fillStyle = l.color;
-    ctx.fillText(l.txt, p.x, p.y);
+    if (l.isVisible) {
+        ctx.fillStyle = l.color;
+        ctx.font = l.font;
+        ctx.fillText(l.txt, p.x, p.y);
+    }
 }
 function renderSprite(p, s, ctx) {
     ctx.drawImage(s.spriteSource, p.x, p.y);
@@ -890,17 +896,18 @@ function renderAnimatedSprite(p, sprite, ctx) {
 function renderImageLayer(position, layer, ctx) {
     ctx.drawImage(layer.image, layer.x, layer.y, ctx.canvas.width, ctx.canvas.height);
 }
-function getTileById(id, sheet) {
+function getTilesheetCoordinateById(id, sheet) {
     return {
         x: (id % sheet.columns) * sheet.tilewidth - sheet.tilewidth,
         y: Math.floor(id / sheet.columns) * sheet.tileheight,
     };
 }
+exports.getTilesheetCoordinateById = getTilesheetCoordinateById;
 function renderTileLayer(position, layer, sheet, scalingFactor, ctx) {
     for (var i = 0; i < layer.data.length; i++) {
         if (layer.data[i] === 0)
             continue;
-        var _a = getTileById(layer.data[i], sheet), x = _a.x, y = _a.y;
+        var _a = getTilesheetCoordinateById(layer.data[i], sheet), x = _a.x, y = _a.y;
         ctx.drawImage(sheet.image, x, y, sheet.tilewidth, sheet.tileheight, position.x + (i % layer.width) * (sheet.tilewidth * scalingFactor), position.y + Math.floor(i / layer.width) * (sheet.tileheight * scalingFactor), sheet.tilewidth * scalingFactor, sheet.tileheight * scalingFactor);
     }
 }
@@ -1097,40 +1104,6 @@ new youngblood_1.Game()
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var youngblood_1 = __webpack_require__(/*! youngblood */ "../youngblood/bundle/youngblood.js");
-exports.ingame = {
-    sceneId: 'ingame',
-    alwaysInitialize: true,
-    init: function (context, services) {
-        context.registerSystem(youngblood_1.InputMappingSystem);
-        context.registerSystem(wolfAnimationSystem);
-        context.registerSystem(mapMovementSystem);
-        var tileset = services.assets.get('assets/forest_tileset');
-        var tilemap = services.assets.get('assets/forest');
-        var map = new youngblood_1.Entity();
-        map.addComponent(new youngblood_1.Position(0, 0));
-        map.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
-        map.addComponent(new youngblood_1.InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-        context.addEntity(map);
-        var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
-        var wolf_info = services.assets.get('assets/wolf_info');
-        var wolf = new youngblood_1.Entity();
-        wolf.addComponent(new youngblood_1.Position(100, 380));
-        wolf.addComponent(new youngblood_1.InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-        wolf.addComponent(new youngblood_1.AnimatedSprite(wolf_sheet, wolf_info, {
-            animationName: 'idle',
-            isPlaying: true,
-            loop: true,
-            scale: 3.0
-        }));
-        context.addEntity(wolf);
-    }
-};
 var wolfAnimationSystem = {
     systemId: 'wolfAnimationSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
@@ -1165,6 +1138,38 @@ var mapMovementSystem = {
         }
     }
 };
+exports.ingame = {
+    sceneId: 'ingame',
+    alwaysInitialize: true,
+    systems: [youngblood_1.InputMappingSystem, wolfAnimationSystem, mapMovementSystem],
+    init: function (context, services) {
+        var tileset = services.assets.get('assets/forest_tileset');
+        var tilemap = services.assets.get('assets/forest');
+        var map = new youngblood_1.Entity();
+        map.addComponent(new youngblood_1.Position(0, 0));
+        map.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
+        map.addComponent(new youngblood_1.InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
+        context.addEntity(map);
+        var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
+        var wolf_info = services.assets.get('assets/wolf_info');
+        var wolf = new youngblood_1.Entity();
+        wolf.addComponent(new youngblood_1.Position(100, 380));
+        wolf.addComponent(new youngblood_1.InputMapping([
+            { name: 'right', code: 39 },
+            { name: 'left', code: 37 }
+        ]));
+        wolf.addComponent(new youngblood_1.AnimatedSprite(wolf_sheet, wolf_info, {
+            animationName: 'idle',
+            isPlaying: true,
+            loop: true,
+            scale: 3.0
+        }));
+        context.addEntity(wolf);
+    }
+};
 
 
 /***/ }),
@@ -1194,21 +1199,24 @@ var LoadingIndicatorSystem = {
 exports.loading = {
     sceneId: 'loading',
     alwaysInitialize: false,
+    systems: [youngblood_1.InputMappingSystem, LoadingIndicatorSystem],
     init: function (context, services) {
-        context.registerSystem(youngblood_1.InputMappingSystem);
-        context.registerSystem(LoadingIndicatorSystem);
         var handler = new youngblood_1.Entity();
         handler.addComponent(new youngblood_1.InputMapping([
             { name: 'proceed', code: 13 }
         ]));
-        handler.addComponent(new youngblood_1.Label("Loading complete. Press Enter to proceed", {
-            isVisible: false,
+        var loadingLabel = new youngblood_1.Label("LOADING...", {
+            isVisible: true,
             color: '#000',
-            font: 'Arial'
-        }));
-        handler.addComponent(new youngblood_1.Position(10, 10));
+            font: '20px monospace',
+        });
+        handler.addComponent(loadingLabel);
+        handler.addComponent(new youngblood_1.Position(30, 30));
         context.addEntity(handler);
-        services.assets.load('assets/asset_list.json').then(function () { console.log('Assets loaded'); });
+        services.assets.load('assets/asset_list.json').then(function () {
+            loadingLabel.txt = 'LOADING COMPLETE. PRESS ENTER TO CONTINUE';
+            console.log('Assets loaded');
+        });
     }
 };
 
