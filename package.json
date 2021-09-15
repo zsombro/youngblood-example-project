@@ -10,10 +10,10 @@
   "keywords": [
     "game"
   ],
-  "author": "me",
+  "author": "Zsombor Z. Berki",
   "license": "ISC",
   "dependencies": {
-    "youngblood": "^0.2.4"
+    "youngblood": "^0.3.7"
   },
   "devDependencies": {
     "ts-loader": "^5.3.3",

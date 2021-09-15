@@ -34,9 +34,9 @@ export var loading: SceneOptions = {
 
         context.addEntity(handler);
         
-        services.assets.load('assets/asset_list.json').then((): void => {
+        services.assets.load('assets/asset_list.json').then((assets): void => {
             loadingLabel.txt = 'LOADING COMPLETE. PRESS ENTER TO CONTINUE';
-            console.log('Assets loaded'); 
+            console.log('Assets loaded');
         });
     }
 };
