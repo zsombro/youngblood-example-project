@@ -340,17 +340,27 @@ exports.InputMapping = InputMapping;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Scene = /** @class */ (function () {
     function Scene(options) {
-        var _this = this;
+        this.options = null;
         this.sceneId = options.sceneId;
         this.initialized = false;
         this.alwaysInitialize = options.alwaysInitialize || true;
-        this.initCallback = options.init;
+        this.initCallback = options.init || (function () { });
         this.gameEntities = {};
         this.systems = {};
-        if (options.systems)
-            options.systems.forEach(function (s) { return _this.registerSystem(s); });
+        this.options = options;
     }
+    Scene.prototype.initialize = function (context, services) {
+        var _this = this;
+        if (this.options.systems)
+            this.options.systems.forEach(function (s) { return _this.registerSystem(s); });
+        if (this.options.entities)
+            this.options.entities.forEach(function (entity) { return _this.addEntity(entity(services)); });
+        this.initCallback(context, services);
+        this.initialized = true;
+    };
     Scene.prototype.registerSystem = function (system) {
+        if (this.systems[system.systemId])
+            throw new Error("System with system ID '" + system.systemId + "' has already been registered");
         this.systems[system.systemId] = system;
     };
     Scene.prototype.unregisterSystem = function (system) {
@@ -472,7 +482,6 @@ var Game = /** @class */ (function () {
      */
     Game.prototype.addScene = function (sceneOptions) {
         this.gameScenes[sceneOptions.sceneId] = new scene_1.Scene(sceneOptions);
-        this.gameScenes[sceneOptions.sceneId].assets = this.services.assets;
         if (this.currentScene == null)
             this.switchToScene(sceneOptions.sceneId);
         console.info("Scene added: " + sceneOptions.sceneId);
@@ -490,7 +499,7 @@ var Game = /** @class */ (function () {
         }
         this.currentScene = this.gameScenes[sceneId];
         if (!this.currentScene.initialized || this.currentScene.alwaysInitialize)
-            this.currentScene.initCallback(this.currentScene, this.services);
+            this.currentScene.initialize(this.currentScene, this.services);
         return this;
     };
     Game.prototype.startSystem = function () {
@@ -778,7 +787,7 @@ var AssetLoader = /** @class */ (function () {
                         return [4 /*yield*/, Promise.all(assetData.map(this.fetchAsset.bind(this)))];
                     case 3:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [2 /*return*/, this.assets];
                 }
             });
         });
@@ -865,8 +874,11 @@ function renderBox(p, b, ctx) {
     ctx.fillRect(p.x, p.y, b.width, b.height);
 }
 function renderLabel(p, l, ctx) {
-    ctx.fillStyle = l.color;
-    ctx.fillText(l.txt, p.x, p.y);
+    if (l.isVisible) {
+        ctx.fillStyle = l.color;
+        ctx.font = l.font;
+        ctx.fillText(l.txt, p.x, p.y);
+    }
 }
 function renderSprite(p, s, ctx) {
     ctx.drawImage(s.spriteSource, p.x, p.y);
@@ -1065,6 +1077,65 @@ exports.TiledMapSystem = {
 
 /***/ }),
 
+/***/ "./src/entity/tilemap.ts":
+/*!*******************************!*\
+  !*** ./src/entity/tilemap.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
+exports.default = (function (services) {
+    var tileset = services.assets.get('assets/forest_tileset');
+    var tilemap = services.assets.get('assets/forest');
+    var tileMap = new youngblood_1.Entity();
+    tileMap.addComponent(new youngblood_1.Position(0, 0));
+    tileMap.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
+    tileMap.addComponent(new youngblood_1.InputMapping([
+        { name: 'right', code: 39 },
+        { name: 'left', code: 37 }
+    ]));
+    return tileMap;
+});
+
+
+/***/ }),
+
+/***/ "./src/entity/wolf.ts":
+/*!****************************!*\
+  !*** ./src/entity/wolf.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
+exports.default = (function (services) {
+    var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
+    var wolf_info = services.assets.get('assets/wolf_info');
+    var wolf = new youngblood_1.Entity();
+    wolf.addComponent(new youngblood_1.Position(100, 380));
+    wolf.addComponent(new youngblood_1.InputMapping([
+        { name: 'right', code: 39 },
+        { name: 'left', code: 37 }
+    ]));
+    wolf.addComponent(new youngblood_1.AnimatedSprite(wolf_sheet, wolf_info, {
+        animationName: 'idle',
+        isPlaying: true,
+        loop: true,
+        scale: 3.0
+    }));
+    return wolf;
+});
+
+
+/***/ }),
+
 /***/ "./src/index.ts":
 /*!**********************!*\
   !*** ./src/index.ts ***!
@@ -1096,42 +1167,13 @@ new youngblood_1.Game()
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
-exports.ingame = {
-    sceneId: 'ingame',
-    alwaysInitialize: true,
-    init: function (context, services) {
-        context.registerSystem(youngblood_1.InputMappingSystem);
-        context.registerSystem(wolfAnimationSystem);
-        context.registerSystem(mapMovementSystem);
-        var tileset = services.assets.get('assets/forest_tileset');
-        var tilemap = services.assets.get('assets/forest');
-        var map = new youngblood_1.Entity();
-        map.addComponent(new youngblood_1.Position(0, 0));
-        map.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
-        map.addComponent(new youngblood_1.InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-        context.addEntity(map);
-        var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
-        var wolf_info = services.assets.get('assets/wolf_info');
-        var wolf = new youngblood_1.Entity();
-        wolf.addComponent(new youngblood_1.Position(100, 380));
-        wolf.addComponent(new youngblood_1.InputMapping([
-            { name: 'right', code: 39 },
-            { name: 'left', code: 37 }
-        ]));
-        wolf.addComponent(new youngblood_1.AnimatedSprite(wolf_sheet, wolf_info, {
-            animationName: 'idle',
-            isPlaying: true,
-            loop: true,
-            scale: 3.0
-        }));
-        context.addEntity(wolf);
-    }
-};
+var tilemap_1 = __importDefault(__webpack_require__(/*! ../entity/tilemap */ "./src/entity/tilemap.ts"));
+var wolf_1 = __importDefault(__webpack_require__(/*! ../entity/wolf */ "./src/entity/wolf.ts"));
 var wolfAnimationSystem = {
     systemId: 'wolfAnimationSystem',
     requiredComponents: ['AnimatedSprite', 'Position', 'InputMapping'],
@@ -1166,6 +1208,12 @@ var mapMovementSystem = {
         }
     }
 };
+exports.ingame = {
+    sceneId: 'ingame',
+    alwaysInitialize: true,
+    entities: [tilemap_1.default, wolf_1.default],
+    systems: [youngblood_1.InputMappingSystem, wolfAnimationSystem, mapMovementSystem]
+};
 
 
 /***/ }),
@@ -1195,21 +1243,24 @@ var LoadingIndicatorSystem = {
 exports.loading = {
     sceneId: 'loading',
     alwaysInitialize: false,
+    systems: [youngblood_1.InputMappingSystem, LoadingIndicatorSystem],
     init: function (context, services) {
-        context.registerSystem(youngblood_1.InputMappingSystem);
-        context.registerSystem(LoadingIndicatorSystem);
         var handler = new youngblood_1.Entity();
         handler.addComponent(new youngblood_1.InputMapping([
             { name: 'proceed', code: 13 }
         ]));
-        handler.addComponent(new youngblood_1.Label("Loading complete. Press Enter to proceed", {
-            isVisible: false,
+        var loadingLabel = new youngblood_1.Label("LOADING...", {
+            isVisible: true,
             color: '#000',
-            font: 'Arial'
-        }));
-        handler.addComponent(new youngblood_1.Position(10, 10));
+            font: '20px monospace',
+        });
+        handler.addComponent(loadingLabel);
+        handler.addComponent(new youngblood_1.Position(30, 30));
         context.addEntity(handler);
-        services.assets.load('assets/asset_list.json').then(function () { console.log('Assets loaded'); });
+        services.assets.load('assets/asset_list.json').then(function (assets) {
+            loadingLabel.txt = 'LOADING COMPLETE. PRESS ENTER TO CONTINUE';
+            console.log('Assets loaded');
+        });
     }
 };
 
