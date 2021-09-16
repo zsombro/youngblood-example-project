@@ -181,7 +181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -338,6 +338,7 @@ exports.InputMapping = InputMapping;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var entity_1 = __webpack_require__(2);
 var Scene = /** @class */ (function () {
     function Scene(options) {
         this.options = null;
@@ -367,7 +368,14 @@ var Scene = /** @class */ (function () {
         delete this.systems[system.systemId];
     };
     Scene.prototype.addEntity = function (entity) {
-        this.gameEntities[entity.id] = entity;
+        if (entity instanceof entity_1.default) {
+            this.gameEntities[entity.id] = entity;
+        }
+        else {
+            var e = new entity_1.default();
+            e.addComponents(entity);
+            this.gameEntities[e.id] = e;
+        }
     };
     Scene.prototype.removeEntity = function (id) {
         delete this.gameEntities[id];
@@ -384,11 +392,71 @@ exports.Scene = Scene;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(3);
+var Entity = /** @class */ (function () {
+    function Entity() {
+        this.id = Entity.prototype.count;
+        Entity.prototype.count++;
+    }
+    Entity.prototype.addComponent = function (component) {
+        this[component.name] = component;
+    };
+    Entity.prototype.addComponents = function (components) {
+        components.forEach(this.addComponent.bind(this));
+    };
+    Entity.prototype.removeComponent = function (componentName) {
+        delete this[componentName];
+    };
+    Entity.prototype.hasComponent = function (componentName) {
+        return this[componentName] != null;
+    };
+    Entity.prototype.hasComponents = function (componentArray) {
+        var len = componentArray.length;
+        for (var i = 0; i < len; i++) {
+            if (!this.hasComponent(componentArray[i]))
+                return false;
+        }
+        return true;
+    };
+    Entity.prototype.get = function (name) {
+        switch (name) {
+            case 'Velocity':
+                return this[name];
+            case 'Position':
+                return this[name];
+            case 'Sprite':
+                return this[name];
+            case 'AnimatedSprite':
+                return this[name];
+            case 'InputMapping':
+                return this[name];
+            case 'Label':
+                return this[name];
+            case 'Box':
+                return this[name];
+            case 'TiledMap':
+                return this[name];
+            default:
+                return this[name];
+        }
+    };
+    return Entity;
+}());
+exports.default = Entity;
+Entity.prototype.count = 0;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(4);
 exports.Game = game_1.default;
 var scene_1 = __webpack_require__(1);
 exports.Scene = scene_1.Scene;
-var entity_1 = __webpack_require__(8);
+var entity_1 = __webpack_require__(2);
 exports.Entity = entity_1.default;
 var component_1 = __webpack_require__(0);
 exports.Position = component_1.Position;
@@ -407,17 +475,17 @@ exports.InputMappingSystem = system_1.InputMappingSystem;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var scene_1 = __webpack_require__(1);
-var inputmanager_1 = __webpack_require__(4);
-var audiomanager_1 = __webpack_require__(5);
-var assetloader_1 = __webpack_require__(6);
-var renderer_1 = __webpack_require__(7);
+var inputmanager_1 = __webpack_require__(5);
+var audiomanager_1 = __webpack_require__(6);
+var assetloader_1 = __webpack_require__(7);
+var renderer_1 = __webpack_require__(8);
 var Game = /** @class */ (function () {
     /**
      * Returns a new `Game` instance.
@@ -534,7 +602,7 @@ exports.default = Game;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -561,7 +629,7 @@ exports.default = InputManager;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -611,7 +679,7 @@ exports.default = AudioManager;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -863,7 +931,7 @@ exports.default = AssetLoader;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -948,63 +1016,6 @@ exports.default = (function (ctx) { return function (scene) {
             renderTiledMap(position, currentEntity.get('TiledMap'), ctx);
     }
 }; });
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Entity = /** @class */ (function () {
-    function Entity() {
-        this.id = Entity.prototype.count;
-        Entity.prototype.count++;
-    }
-    Entity.prototype.addComponent = function (component) {
-        this[component.name] = component;
-    };
-    Entity.prototype.removeComponent = function (componentName) {
-        delete this[componentName];
-    };
-    Entity.prototype.hasComponent = function (componentName) {
-        return this[componentName] != null;
-    };
-    Entity.prototype.hasComponents = function (componentArray) {
-        var len = componentArray.length;
-        for (var i = 0; i < len; i++) {
-            if (!this.hasComponent(componentArray[i]))
-                return false;
-        }
-        return true;
-    };
-    Entity.prototype.get = function (name) {
-        switch (name) {
-            case 'Velocity':
-                return this[name];
-            case 'Position':
-                return this[name];
-            case 'Sprite':
-                return this[name];
-            case 'AnimatedSprite':
-                return this[name];
-            case 'InputMapping':
-                return this[name];
-            case 'Label':
-                return this[name];
-            case 'Box':
-                return this[name];
-            case 'TiledMap':
-                return this[name];
-            default:
-                return this[name];
-        }
-    };
-    return Entity;
-}());
-exports.default = Entity;
-Entity.prototype.count = 0;
 
 
 /***/ }),
@@ -1115,23 +1126,19 @@ exports.default = (function (services) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
-exports.default = (function (services) {
-    var wolf_sheet = services.assets.get('assets/80x48Wolf_FullSheet');
-    var wolf_info = services.assets.get('assets/wolf_info');
-    var wolf = new youngblood_1.Entity();
-    wolf.addComponent(new youngblood_1.Position(100, 380));
-    wolf.addComponent(new youngblood_1.InputMapping([
-        { name: 'right', code: 39 },
-        { name: 'left', code: 37 }
-    ]));
-    wolf.addComponent(new youngblood_1.AnimatedSprite(wolf_sheet, wolf_info, {
-        animationName: 'idle',
+exports.default = (function (services) { return [
+    new youngblood_1.Position(100, 380),
+    new youngblood_1.InputMapping([
+        { name: "right", code: 39 },
+        { name: "left", code: 37 },
+    ]),
+    new youngblood_1.AnimatedSprite(services.assets.get("assets/80x48Wolf_FullSheet"), services.assets.get("assets/wolf_info"), {
+        animationName: "idle",
         isPlaying: true,
         loop: true,
-        scale: 3.0
-    }));
-    return wolf;
-});
+        scale: 3.0,
+    }),
+]; });
 
 
 /***/ }),

@@ -13,7 +13,7 @@
   "author": "Zsombor Z. Berki",
   "license": "ISC",
   "dependencies": {
-    "youngblood": "^0.3.7"
+    "youngblood": "^0.3.8"
   },
   "devDependencies": {
     "ts-loader": "^5.3.3",
