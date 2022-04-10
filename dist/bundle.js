@@ -181,7 +181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -329,6 +329,20 @@ var InputMapping = /** @class */ (function (_super) {
     return InputMapping;
 }(Component));
 exports.InputMapping = InputMapping;
+var Camera = /** @class */ (function (_super) {
+    __extends(Camera, _super);
+    function Camera(options) {
+        var _this = _super.call(this, 'Camera') || this;
+        _this.centerX = 0;
+        _this.centerY = 0;
+        _this.offsetX = options.offsetX | 0;
+        _this.offsetY = options.offsetY | 0;
+        _this.drag = options.drag | 0;
+        return _this;
+    }
+    return Camera;
+}(Component));
+exports.Camera = Camera;
 
 
 /***/ }),
@@ -418,26 +432,7 @@ var Entity = /** @class */ (function () {
         return true;
     };
     Entity.prototype.get = function (name) {
-        switch (name) {
-            case 'Velocity':
-                return this[name];
-            case 'Position':
-                return this[name];
-            case 'Sprite':
-                return this[name];
-            case 'AnimatedSprite':
-                return this[name];
-            case 'InputMapping':
-                return this[name];
-            case 'Label':
-                return this[name];
-            case 'Box':
-                return this[name];
-            case 'TiledMap':
-                return this[name];
-            default:
-                return this[name];
-        }
+        return this[name];
     };
     return Entity;
 }());
@@ -452,7 +447,44 @@ Entity.prototype.count = 0;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var game_1 = __webpack_require__(4);
+exports.InputMappingSystem = {
+    systemId: 'inputMappingSystem',
+    requiredComponents: ['InputMapping'],
+    update: function (entity, scene, services) {
+        var inputMapping = entity.get('InputMapping');
+        for (var i = 0; i < inputMapping.mapping.length; i++) {
+            var c = inputMapping.mapping[i];
+            inputMapping[c.name] = services.input.isPressed(c.code);
+        }
+    },
+};
+exports.TiledMapSystem = {
+    systemId: 'tiledMapSystem',
+    requiredComponents: ['TiledMap', 'Position', 'InputMapping'],
+    update: function (entity) {
+        var mapData = entity.get('TiledMap');
+    },
+};
+exports.CameraMovementSystem = {
+    systemId: 'cameraMovementSystem',
+    requiredComponents: ['Position', 'Camera'],
+    update: function (entity) {
+        var position = entity.get('Position');
+        var camera = entity.get('Camera');
+        camera.centerX = position.x;
+        camera.centerY = position.y;
+    },
+};
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = __webpack_require__(5);
 exports.Game = game_1.default;
 var scene_1 = __webpack_require__(1);
 exports.Scene = scene_1.Scene;
@@ -466,26 +498,30 @@ exports.AnimatedSprite = component_1.AnimatedSprite;
 exports.Box = component_1.Box;
 exports.InputMapping = component_1.InputMapping;
 exports.Label = component_1.Label;
-var tiledMap_1 = __webpack_require__(9);
+exports.Camera = component_1.Camera;
+var tiledMap_1 = __webpack_require__(11);
 exports.TiledMap = tiledMap_1.default;
 var component_2 = __webpack_require__(0);
 exports.Component = component_2.default;
-var system_1 = __webpack_require__(10);
+var system_1 = __webpack_require__(3);
+exports.CameraMovementSystem = system_1.CameraMovementSystem;
 exports.InputMappingSystem = system_1.InputMappingSystem;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var scene_1 = __webpack_require__(1);
-var inputmanager_1 = __webpack_require__(5);
-var audiomanager_1 = __webpack_require__(6);
-var assetloader_1 = __webpack_require__(7);
-var renderer_1 = __webpack_require__(8);
+var inputmanager_1 = __webpack_require__(6);
+var audiomanager_1 = __webpack_require__(7);
+var assetloader_1 = __webpack_require__(8);
+var renderer_1 = __webpack_require__(9);
+var framerateManager_1 = __webpack_require__(10);
+var system_1 = __webpack_require__(3);
 var Game = /** @class */ (function () {
     /**
      * Returns a new `Game` instance.
@@ -502,8 +538,7 @@ var Game = /** @class */ (function () {
         };
         this.gameScenes = {};
         this.currentScene = null;
-        this.fps = 60;
-        this.then = Date.now();
+        this.framerateManager = new framerateManager_1.default(60);
         console.info('Game created');
     }
     /**
@@ -524,14 +559,14 @@ var Game = /** @class */ (function () {
             this.setRenderer(renderer_1.default(ctx));
         }
         this.startSystem();
-        console.info("Started rendering at " + this.fps + "fps");
+        console.info("Started rendering at " + this.framerateManager.framerate + "fps");
     };
     /**
      * Set an upper framerate limit. `60` by default!
      * @param fps
      */
     Game.prototype.setFramerate = function (fps) {
-        this.fps = fps;
+        this.framerateManager.setFramerate(fps);
         return this;
     };
     /**
@@ -549,11 +584,24 @@ var Game = /** @class */ (function () {
      * initialized.
      */
     Game.prototype.addScene = function (sceneOptions) {
-        this.gameScenes[sceneOptions.sceneId] = new scene_1.Scene(sceneOptions);
+        var scene = new scene_1.Scene(sceneOptions);
+        scene.registerSystem(system_1.InputMappingSystem);
+        scene.registerSystem(system_1.CameraMovementSystem);
+        this.gameScenes[sceneOptions.sceneId] = scene;
         if (this.currentScene == null)
             this.switchToScene(sceneOptions.sceneId);
         console.info("Scene added: " + sceneOptions.sceneId);
         return this;
+    };
+    /**
+     * Remove a scene from the system.
+     * @param sceneId The sceneId you provided when registering the System
+     * @returns The scene itself before it's deleted, just in case
+     */
+    Game.prototype.removeScene = function (sceneId) {
+        var scene = this.gameScenes[sceneId];
+        delete this.gameScenes[sceneId];
+        return scene;
     };
     /**
      * Switch to a different scene. Also available as a `SceneService`. If you don't call it
@@ -572,19 +620,13 @@ var Game = /** @class */ (function () {
     };
     Game.prototype.startSystem = function () {
         var _this = this;
-        window.requestAnimationFrame(function () {
-            _this.startSystem();
-        });
-        this.interval = 1000 / this.fps;
-        this.now = Date.now();
-        this.delta = this.now - this.then;
-        if (this.delta > this.interval) {
-            this.then = this.now - (this.delta % this.interval);
-            if (!this.currentScene)
+        window.requestAnimationFrame(function () { return _this.startSystem(); });
+        this.framerateManager.processFrame(function () {
+            if (!_this.currentScene)
                 return;
-            this.update();
-            this.renderer(this.currentScene);
-        }
+            _this.update();
+            _this.renderer(_this.currentScene);
+        });
     };
     Game.prototype.update = function () {
         for (var e in this.currentScene.gameEntities) {
@@ -602,7 +644,7 @@ exports.default = Game;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -629,7 +671,7 @@ exports.default = InputManager;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -679,7 +721,7 @@ exports.default = AudioManager;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -931,12 +973,13 @@ exports.default = AssetLoader;
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var component_1 = __webpack_require__(0);
 function renderBox(p, b, ctx) {
     ctx.fillStyle = b.fillStyle;
     ctx.fillRect(p.x, p.y, b.width, b.height);
@@ -1001,25 +1044,72 @@ function renderTiledMap(position, map, ctx) {
 exports.default = (function (ctx) { return function (scene) {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    var camera = null;
+    var cameras = Object.values(scene.gameEntities).filter(function (entity) { return entity.hasComponent('Camera'); });
+    if (cameras.length > 0) {
+        camera = cameras[0].get('Camera');
+    }
+    var renderPosition;
     for (var _i = 0, _a = Object.values(scene.gameEntities).filter(function (e) { return e.hasComponent('Position'); }); _i < _a.length; _i++) {
         var currentEntity = _a[_i];
         var position = currentEntity.get('Position');
+        renderPosition = new component_1.Position(position.x, position.y);
+        if (camera) {
+            renderPosition.x = ctx.canvas.width / 2 + position.x - camera.centerX + camera.offsetX;
+            renderPosition.y = ctx.canvas.height / 2 + position.y - camera.centerY + camera.offsetY;
+        }
         if (currentEntity.hasComponent('Box'))
-            renderBox(position, currentEntity.get('Box'), ctx);
+            renderBox(renderPosition, currentEntity.get('Box'), ctx);
         if (currentEntity.hasComponent('Label'))
-            renderLabel(position, currentEntity.get('Label'), ctx);
+            renderLabel(renderPosition, currentEntity.get('Label'), ctx);
         if (currentEntity.hasComponent('Sprite'))
-            renderSprite(position, currentEntity.get('Sprite'), ctx);
+            renderSprite(renderPosition, currentEntity.get('Sprite'), ctx);
         if (currentEntity.hasComponent('AnimatedSprite'))
-            renderAnimatedSprite(position, currentEntity.get('AnimatedSprite'), ctx);
+            renderAnimatedSprite(renderPosition, currentEntity.get('AnimatedSprite'), ctx);
         if (currentEntity.hasComponent('TiledMap'))
-            renderTiledMap(position, currentEntity.get('TiledMap'), ctx);
+            renderTiledMap(renderPosition, currentEntity.get('TiledMap'), ctx);
     }
 }; });
 
 
 /***/ }),
-/* 9 */
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var FramerateManager = /** @class */ (function () {
+    function FramerateManager(fps) {
+        this.setFramerate(fps);
+    }
+    FramerateManager.prototype.processFrame = function (callback) {
+        this.now = Date.now();
+        this.delta = this.now - this.then;
+        if (this.delta > this.interval) {
+            this.then = this.now - (this.delta % this.interval);
+            callback();
+        }
+    };
+    FramerateManager.prototype.setFramerate = function (newValue) {
+        this.fps = newValue;
+        this.then = Date.now();
+        this.interval = 1000 / this.fps;
+    };
+    Object.defineProperty(FramerateManager.prototype, "framerate", {
+        get: function () {
+            return this.fps;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return FramerateManager;
+}());
+exports.default = FramerateManager;
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1054,33 +1144,6 @@ var TiledMap = /** @class */ (function (_super) {
 exports.default = TiledMap;
 
 
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.InputMappingSystem = {
-    systemId: 'inputMappingSystem',
-    requiredComponents: ['InputMapping'],
-    update: function (entity, scene, services) {
-        var inputMapping = entity['InputMapping'];
-        for (var i = 0; i < inputMapping.mapping.length; i++) {
-            var c = inputMapping.mapping[i];
-            inputMapping[c.name] = services.input.isPressed(c.code);
-        }
-    },
-};
-exports.TiledMapSystem = {
-    systemId: 'tiledMapSystem',
-    requiredComponents: ['TiledMap', 'Position', 'InputMapping'],
-    update: function (entity, scene, services) {
-        var mapData = entity['TiledMap'];
-    },
-};
-
-
 /***/ })
 /******/ ]);
 });
@@ -1105,10 +1168,6 @@ exports.default = (function (services) {
     var tileMap = new youngblood_1.Entity();
     tileMap.addComponent(new youngblood_1.Position(0, 0));
     tileMap.addComponent(new youngblood_1.TiledMap(tilemap, tileset, { scale: 2.5 }));
-    tileMap.addComponent(new youngblood_1.InputMapping([
-        { name: 'right', code: 39 },
-        { name: 'left', code: 37 }
-    ]));
     return tileMap;
 });
 
@@ -1127,6 +1186,7 @@ exports.default = (function (services) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 exports.default = (function (services) { return [
+    new youngblood_1.Camera({ offsetX: -100, offsetY: 100 }),
     new youngblood_1.Position(100, 380),
     new youngblood_1.InputMapping([
         { name: "right", code: 39 },
@@ -1178,7 +1238,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var youngblood_1 = __webpack_require__(/*! youngblood */ "./node_modules/youngblood/bundle/youngblood.js");
 var tilemap_1 = __importDefault(__webpack_require__(/*! ../entity/tilemap */ "./src/entity/tilemap.ts"));
 var wolf_1 = __importDefault(__webpack_require__(/*! ../entity/wolf */ "./src/entity/wolf.ts"));
 var wolfAnimationSystem = {
@@ -1191,27 +1250,15 @@ var wolfAnimationSystem = {
         if (inputMapping.right) {
             sprite.animationName = 'running';
             sprite.flip = false;
+            pos.x += 20;
         }
         else if (inputMapping.left) {
             sprite.animationName = 'running';
             sprite.flip = true;
+            pos.x -= 20;
         }
         else {
             sprite.animationName = 'idle';
-        }
-    }
-};
-var mapMovementSystem = {
-    systemId: 'mapMovementSystem',
-    requiredComponents: ['Position', 'TiledMap'],
-    update: function (entity, scene, services) {
-        var pos = entity.get('Position');
-        var inputMapping = entity.get('InputMapping');
-        if (inputMapping.right) {
-            pos.x -= 20;
-        }
-        else if (inputMapping.left) {
-            pos.x += 20;
         }
     }
 };
@@ -1219,7 +1266,7 @@ exports.ingame = {
     sceneId: 'ingame',
     alwaysInitialize: true,
     entities: [tilemap_1.default, wolf_1.default],
-    systems: [youngblood_1.InputMappingSystem, wolfAnimationSystem, mapMovementSystem]
+    systems: [wolfAnimationSystem]
 };
 
 
@@ -1250,7 +1297,7 @@ var LoadingIndicatorSystem = {
 exports.loading = {
     sceneId: 'loading',
     alwaysInitialize: false,
-    systems: [youngblood_1.InputMappingSystem, LoadingIndicatorSystem],
+    systems: [LoadingIndicatorSystem],
     init: function (context, services) {
         var handler = new youngblood_1.Entity();
         handler.addComponent(new youngblood_1.InputMapping([

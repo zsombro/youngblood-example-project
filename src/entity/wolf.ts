@@ -1,6 +1,7 @@
 import {
   AnimatedSprite,
   AnimationSheet,
+  Camera,
   Component,
   Entity,
   InputMapping,
@@ -9,6 +10,7 @@ import {
 } from "youngblood";
 
 export default (services: SceneServices): Component[] => [
+  new Camera({ offsetX: -100, offsetY: 100 }),
   new Position(100, 380),
   new InputMapping([
     { name: "right", code: 39 },

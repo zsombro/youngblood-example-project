@@ -1,4 +1,4 @@
-import { SceneOptions, SceneServices, Scene,System,  InputMappingSystem, Entity, InputMapping, Label, Position } from "youngblood";
+import { SceneOptions, SceneServices, Scene,System, Entity, InputMapping, Label, Position } from "youngblood";
 
 const LoadingIndicatorSystem: System = {
     systemId: 'labelSystem',
@@ -16,7 +16,7 @@ const LoadingIndicatorSystem: System = {
 export var loading: SceneOptions = {
     sceneId: 'loading',
     alwaysInitialize: false,
-    systems: [InputMappingSystem, LoadingIndicatorSystem],
+    systems: [LoadingIndicatorSystem],
     init: function (context: Scene, services: SceneServices) {
         let handler = new Entity();
         handler.addComponent(new InputMapping([
