@@ -19,6 +19,6 @@
     "webpack-cli": "^3.3.1"
   },
   "dependencies": {
-    "youngblood": "^0.4.8"
+    "youngblood": "^0.5.8"
   }
 }

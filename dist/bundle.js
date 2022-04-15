@@ -425,6 +425,8 @@ var Entity = /** @class */ (function () {
     };
     Entity.prototype.hasComponents = function (componentArray) {
         var len = componentArray.length;
+        if (!len)
+            return false;
         for (var i = 0; i < len; i++) {
             if (!this.hasComponent(componentArray[i]))
                 return false;
@@ -499,7 +501,7 @@ exports.Box = component_1.Box;
 exports.InputMapping = component_1.InputMapping;
 exports.Label = component_1.Label;
 exports.Camera = component_1.Camera;
-var tiledMap_1 = __webpack_require__(11);
+var tiledMap_1 = __webpack_require__(12);
 exports.TiledMap = tiledMap_1.default;
 var component_2 = __webpack_require__(0);
 exports.Component = component_2.default;
@@ -522,23 +524,29 @@ var assetloader_1 = __webpack_require__(8);
 var renderer_1 = __webpack_require__(9);
 var framerateManager_1 = __webpack_require__(10);
 var system_1 = __webpack_require__(3);
+var eventmanager_1 = __webpack_require__(11);
 var Game = /** @class */ (function () {
     /**
      * Returns a new `Game` instance.
      */
     function Game() {
         this.renderer = null;
+        this.framerateManager = new framerateManager_1.default(60);
+        this.eventManager = new eventmanager_1.default();
+        this.gameScenes = {};
+        this.currentScene = null;
         this.services = {
             input: new inputmanager_1.default(),
             audio: new audiomanager_1.default(),
             assets: new assetloader_1.default(),
+            event: {
+                dispatch: this.eventManager.dispatch.bind(this.eventManager),
+                on: this.eventManager.on.bind(this.eventManager),
+            },
             game: {
                 switchToScene: this.switchToScene.bind(this),
             },
         };
-        this.gameScenes = {};
-        this.currentScene = null;
-        this.framerateManager = new framerateManager_1.default(60);
         console.info('Game created');
     }
     /**
@@ -629,6 +637,7 @@ var Game = /** @class */ (function () {
         });
     };
     Game.prototype.update = function () {
+        var _this = this;
         for (var e in this.currentScene.gameEntities) {
             var entity = this.currentScene.gameEntities[e];
             for (var s in this.currentScene.systems) {
@@ -637,6 +646,11 @@ var Game = /** @class */ (function () {
                     system.update(entity, this.currentScene, this.services);
             }
         }
+        // Systems that have no component requirements will run once per frame
+        Object.values(this.currentScene.systems)
+            .filter(function (system) { return system.requiredComponents.length === 0; })
+            .forEach(function (system) { return system.update(null, _this.currentScene, _this.services); });
+        this.eventManager.emptyQueue();
     };
     return Game;
 }());
@@ -1114,6 +1128,35 @@ exports.default = FramerateManager;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var EventManager = /** @class */ (function () {
+    function EventManager() {
+        this.dispatchQueue = [];
+        this.executionQueue = [];
+    }
+    EventManager.prototype.on = function (event, callback) {
+        this.executionQueue
+            .filter(function (e) { return e.event === event; })
+            .forEach(function (e) { return callback(e.params); });
+    };
+    EventManager.prototype.dispatch = function (event, params) {
+        this.dispatchQueue.push({ event: event, params: params });
+    };
+    EventManager.prototype.emptyQueue = function () {
+        this.executionQueue = this.dispatchQueue;
+        this.dispatchQueue = [];
+    };
+    return EventManager;
+}());
+exports.default = EventManager;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1289,30 +1332,34 @@ var LoadingIndicatorSystem = {
     update: function (entity, scene, services) {
         var label = entity['Label'];
         var inputMapping = entity['InputMapping'];
+        services.event.on('loading_complete', function () {
+            label.isVisible = true;
+            label.txt = 'LOADING COMPLETE. PRESS ENTER TO START';
+        });
         if (label.isVisible && inputMapping.proceed) {
             services.game.switchToScene('ingame');
         }
     }
 };
+var loadingInputHandler = function () { return [
+    new youngblood_1.Position(30, 30),
+    new youngblood_1.Label("LOADING...", {
+        isVisible: true,
+        color: '#000',
+        font: '20px monospace',
+    }),
+    new youngblood_1.InputMapping([
+        { name: 'proceed', code: 13 }
+    ]),
+]; };
 exports.loading = {
     sceneId: 'loading',
     alwaysInitialize: false,
     systems: [LoadingIndicatorSystem],
+    entities: [loadingInputHandler],
     init: function (context, services) {
-        var handler = new youngblood_1.Entity();
-        handler.addComponent(new youngblood_1.InputMapping([
-            { name: 'proceed', code: 13 }
-        ]));
-        var loadingLabel = new youngblood_1.Label("LOADING...", {
-            isVisible: true,
-            color: '#000',
-            font: '20px monospace',
-        });
-        handler.addComponent(loadingLabel);
-        handler.addComponent(new youngblood_1.Position(30, 30));
-        context.addEntity(handler);
-        services.assets.load('assets/asset_list.json').then(function (assets) {
-            loadingLabel.txt = 'LOADING COMPLETE. PRESS ENTER TO CONTINUE';
+        services.assets.load('assets/asset_list.json').then(function () {
+            services.event.dispatch('loading_complete', {});
             console.log('Assets loaded');
         });
     }
